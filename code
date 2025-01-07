@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mandelbrot Set with Zoom</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #000;
+        }
+        canvas {
+            display: block;
+            cursor: crosshair;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="mandelbrotCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('mandelbrotCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 800;
+
+        let xmin = -2.0, xmax = 1.0, ymin = -1.5, ymax = 1.5;
+        const maxIter = 1000;
+
+        function mandelbrot(x, y) {
+            let real = x, imag = y, iter = 0;
+            while (real * real + imag * imag <= 4 && iter < maxIter) {
+                const tempReal = real * real - imag * imag + x;
+                imag = 2 * real * imag + y;
+                real = tempReal;
+                iter++;
+            }
+            return iter;
+        }
+
+        function drawFractal() {
+            const imgData = ctx.createImageData(canvas.width, canvas.height);
+            for (let px = 0; px < canvas.width; px++) {
+                for (let py = 0; py < canvas.height; py++) {
+                    const x = xmin + (px / canvas.width) * (xmax - xmin);
+                    const y = ymin + (py / canvas.height) * (ymax - ymin);
+
+                    const iter = mandelbrot(x, y);
+                    const color = iter === maxIter ? 0 : (iter / maxIter) * 255;
+
+                    const index = (py * canvas.width + px) * 4;
+                    imgData.data[index] = color; // Red
+                    imgData.data[index + 1] = color * 0.5; // Green
+                    imgData.data[index + 2] = color * 0.8; // Blue
+                    imgData.data[index + 3] = 255; // Alpha
+                }
+            }
+            ctx.putImageData(imgData, 0, 0);
+        }
+
+        function zoom(event) {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+
+            const xCenter = xmin + (mouseX / canvas.width) * (xmax - xmin);
+            const yCenter = ymin + (mouseY / canvas.height) * (ymax - ymin);
+
+            const zoomFactor = 0.5; // How much to zoom in each step
+            const rangeX = (xmax - xmin) * zoomFactor;
+            const rangeY = (ymax - ymin) * zoomFactor;
+
+            xmin = xCenter - rangeX / 2;
+            xmax = xCenter + rangeX / 2;
+            ymin = yCenter - rangeY / 2;
+            ymax = yCenter + rangeY / 2;
+
+            drawFractal();
+        }
+
+        canvas.addEventListener('click', zoom);
+
+        // Initial draw
+        drawFractal();
+    </script>
+</body>
+</html>
