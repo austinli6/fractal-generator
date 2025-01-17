@@ -70,7 +70,7 @@
             const xCenter = xmin + (mouseX / canvas.width) * (xmax - xmin);
             const yCenter = ymin + (mouseY / canvas.height) * (ymax - ymin);
 
-            const zoomFactor = 0.5; // How much to zoom in each step
+            const zoomFactor = 0.5; // Zoom in
             const rangeX = (xmax - xmin) * zoomFactor;
             const rangeY = (ymax - ymin) * zoomFactor;
 
@@ -82,7 +82,32 @@
             drawFractal();
         }
 
-        canvas.addEventListener('click', zoom);
+        // Add this function for right-click zoom out
+        function zoomOut(event) {
+            event.preventDefault(); // Prevent the context menu from appearing
+
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+
+            const xCenter = xmin + (mouseX / canvas.width) * (xmax - xmin);
+            const yCenter = ymin + (mouseY / canvas.height) * (ymax - ymin);
+
+            const zoomFactor = 2.0; // Zoom out
+            const rangeX = (xmax - xmin) * zoomFactor;
+            const rangeY = (ymax - ymin) * zoomFactor;
+
+            xmin = xCenter - rangeX / 2;
+            xmax = xCenter + rangeX / 2;
+            ymin = yCenter - rangeY / 2;
+            ymax = yCenter + rangeY / 2;
+
+            drawFractal();
+        }
+
+        // Add event listeners for zoom in and zoom out
+        canvas.addEventListener('click', zoom); // Left-click zoom in
+        canvas.addEventListener('contextmenu', zoomOut); // Right-click zoom out
 
         // Initial draw
         drawFractal();
